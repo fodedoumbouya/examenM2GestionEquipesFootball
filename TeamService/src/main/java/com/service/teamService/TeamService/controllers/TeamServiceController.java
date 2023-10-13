@@ -168,15 +168,8 @@ public class TeamServiceController {
 
     }
 
-//    @ApiOperation(value = "Get list of Team Service in the System ", response = Iterable.class, tags = "get Team by Id")
-    @ApiOperation(value = "Get specific Team in the System ", response = Team.class, tags = "getStudent")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Suceess|OK"),
-            @ApiResponse(code = 401, message = "not authorized!"),
-            @ApiResponse(code = 403, message = "forbidden!!!"),
-            @ApiResponse(code = 404, message = "not found!!!")
-    })
 
+    @ApiOperation(value = "Get specific Team in the System ", response = Team.class, tags = "getStudent")
     @GetMapping(value = "/{teamId}")
     public Team getTeamById(@PathVariable int teamId) {
         System.out.println("Getting Team by id " + teamId);
@@ -198,6 +191,7 @@ public class TeamServiceController {
         return team;
     }
 
+    @ApiOperation(value = "Get if Team exist in the System ", response = Team.class, tags = "getTeamExistById")
     @GetMapping(value = "/teamsExist/{teamId}")
     public ResponseRest getTeamExistById(@PathVariable int teamId) {
         System.out.println("Getting Team by id " + teamId);
@@ -209,7 +203,12 @@ public class TeamServiceController {
         }
     }
 
-
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Success|OK"),
+            @ApiResponse(code = 401, message = "not authorized!"),
+            @ApiResponse(code = 403, message = "forbidden!!!"),
+            @ApiResponse(code = 404, message = "not found!!!")
+    })
     @Bean
     @LoadBalanced
     public RestTemplate restTemplate() {

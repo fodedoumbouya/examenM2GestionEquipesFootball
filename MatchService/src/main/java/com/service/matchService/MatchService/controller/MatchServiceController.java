@@ -1,14 +1,20 @@
 package com.service.matchService.MatchService.controller;
 
 import com.service.matchService.MatchService.model.Match;
+import com.service.matchService.MatchService.model.Player;
+import com.service.matchService.MatchService.model.ResponseRest;
+import com.service.matchService.MatchService.model.playerTeam;
+import com.service.matchService.MatchService.utils.utils;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
@@ -24,29 +30,112 @@ public class MatchServiceController {
     RestTemplate restTemplate;
     private static final Map<Integer, Match> matchData = new HashMap<Integer, Match>() {
 
-//  this.id = id;
-//        this.teamAId = teamAId;
-//        this.teamBId = teamBId;
-//        this.score = score;
-//        this.playersScore = playersScore;
         {
-            put(1,  new Match(1,1,2,"2-0",Arrays.asList(1,2)));
+            put(1,  new Match(1,1,2,"2-0",Arrays.asList(new Player(1,"player 1", new playerTeam(1,"team A")))));
 
 
         }
 
     };
 
-    @GetMapping(value = "/{matchId}")
-    public Match getTeamById(@PathVariable int matchId) {
-        System.out.println("Getting Match by id " + matchId);
-        Match match = teamData.get(teamId);
+    @ApiOperation(value = "delete specific Match in the System ", response = String.class, tags = "deleteMatch")
+    @DeleteMapping("/{id}")
+    public String deleteMatch(@PathVariable int id){
+        System.out.println("Updating by id " + id);
+        String msg = "Success";
+        Match team = matchData.get(id);
         if (team == null) {
-            team = new Team(0, "N/A", Arrays.asList());
+            msg = "The ID does not exist";
+        }else{
+            matchData.remove(id);
         }
-        return team;
+        return msg;
     }
 
+
+    @ApiOperation(value = "Put specific Team in the System ", response = String.class, tags = "putMatch")
+    @PutMapping("/{id}")
+    public String putMatch(@PathVariable int id, @RequestBody Match match) {
+        System.out.println("Posting match " + match);
+        String msg = "Success";
+        ResponseRest responseRest1 = utils.teamExist(match.getTeamAId(), restTemplate);
+        ResponseRest responseRest2 = utils. teamExist(match.getTeamBId(), restTemplate);
+        Integer playerNotExistId =utils. allPlayerExist(match,restTemplate);
+        Integer playerScoreExist = utils.allPlayerScoreExist(match,restTemplate);
+        if (!responseRest1.isValid()){
+            msg = "Fail\nTeam "+match.getTeamAId()+" doesn't not exist in Team Service";
+        }else if  (!responseRest2.isValid()){
+            msg = "Fail\nTeam "+match.getTeamBId()+" doesn't not exist in Team Service";
+        } else if (playerNotExistId != -1){
+            msg = "Fail\nPlayer "+playerNotExistId+" doesn't not exist";
+        } else if(playerScoreExist != -1){
+            msg = "Fail\nPlayer Score "+playerScoreExist+" doesn't not exist";
+        } else if(id != match.getId()){
+            msg = "Fail\nUrl ID and the body ID doesn't match";
+        } else {
+            Match m = matchData.get(id);
+            if (m == null) {
+                msg = "ID doesn't exist";
+            } else {
+                matchData.remove(id);
+                matchData.put(id, match);
+            }
+        }
+        return  msg;
+    }
+
+    @ApiOperation(value = "Post specific Team in the System ", response = String.class, tags = "postMatch")
+    @PostMapping
+    public String postMatch(@RequestBody Match match) {
+        System.out.println("Posting match " + match);
+        String msg = "Success";
+        if(!match.areAllFieldsNotEmpty()){
+            msg=  "Fail\nYour body should be like\n{id = 1, teamAId = 1, teamBId = 1, score = 2-0,playersScore=[id = 1,name=player,playerTeam = [id =1,teamName=teamA]]}";
+        }else{
+            ResponseRest responseRest1 = utils.teamExist(match.getTeamAId(), restTemplate);
+            ResponseRest responseRest2 = utils. teamExist(match.getTeamBId(), restTemplate);
+            Integer playerNotExistId =utils. allPlayerExist(match,restTemplate);
+            Integer playerScoreExist = utils.allPlayerScoreExist(match,restTemplate);
+            if (!responseRest1.isValid()){
+                msg = "Fail\nTeam "+match.getTeamAId()+" doesn't not exist in Team Service";
+            }else if  (!responseRest2.isValid()){
+                msg = "Fail\nTeam "+match.getTeamBId()+" doesn't not exist in Team Service";
+            } else if (playerNotExistId != -1){
+                msg = "Fail\nPlayer "+playerNotExistId+" doesn't not exist";
+            } else if(playerScoreExist != -1){
+                msg = "Fail\nPlayer Score "+playerScoreExist+" doesn't not exist";
+            } else {
+                Match m = matchData.get(match.getId());
+                if (m != null) {
+                    msg = "ID already exist";
+                } else {
+                    matchData.put(match.getId(), match);
+                }
+            }
+        }
+
+        return msg;
+
+    }
+
+    @ApiOperation(value = "Get specific Match exist in the System ", response = Match.class, tags = "getMatchById")
+    @GetMapping(value = "/{matchId}")
+    public Match getMatchById(@PathVariable int matchId) {
+        System.out.println("Getting Match by id " + matchId);
+        Match match = matchData.get(matchId);
+        if (match == null) {
+            match = new Match(-1,-1,-1,"",Arrays.asList());
+        }
+        return match;
+    }
+
+
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Success|OK"),
+            @ApiResponse(code = 401, message = "not authorized!"),
+            @ApiResponse(code = 403, message = "forbidden!!!"),
+            @ApiResponse(code = 404, message = "not found!!!")
+    })
 
     @Bean
     @LoadBalanced

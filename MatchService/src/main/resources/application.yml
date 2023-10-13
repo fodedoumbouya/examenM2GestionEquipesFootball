@@ -15,7 +15,7 @@ eureka:
 
 spring:
   application:
-    name: teamService
+    name: matchService
 
 management:
   security:

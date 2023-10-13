@@ -11,7 +11,7 @@ public class Match {
     public Match() {
 
     }
-    public Match(Integer id,Integer teamAId,Integer teamBId,String score,List<Integer> playersScore) {
+    public Match(Integer id,Integer teamAId,Integer teamBId,String score,List<Player> playersScore) {
         super();
         this.id = id;
         this.teamAId = teamAId;
@@ -33,7 +33,7 @@ public class Match {
     private String score;
 
     @ApiModelProperty(notes = "playersScore of the Match",name="playersScore",required=true,value="[1,2]")
-    private List<Integer> playersScore;
+    private List<Player> playersScore;
 
 
     public Integer getId() {
@@ -68,12 +68,16 @@ public class Match {
         this.score = score;
     }
 
-    public List<Integer> getPlayersScore() {
+    public List<Player> getPlayersScore() {
         return playersScore;
     }
 
-    public void setPlayersScore(List<Integer> playersScore) {
+    public void setPlayersScore(List<Player> playersScore) {
         this.playersScore = playersScore;
+    }
+
+    public boolean areAllFieldsNotEmpty() {
+        return id != null && teamAId != null && teamBId != null && !score.isEmpty() && playersScore != null && !playersScore.isEmpty();
     }
 
     @Override
