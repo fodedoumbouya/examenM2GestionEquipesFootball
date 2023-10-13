@@ -1,4 +1,5 @@
-package com.service.matchService.MatchService.model;
+package com.service.statsService.StatsService.model;
+
 
 
 
@@ -82,7 +83,7 @@ public class Match {
     }
 
     public boolean areAllFieldsNotEmpty() {
-        return id != null && teamAId != null && teamBId != null && !score.isEmpty()  && playersScore != null && !playersScore.isEmpty();
+        return id != null && teamAId != null && teamBId != null && !score.isEmpty() && playersScore != null && !playersScore.isEmpty();
     }
 
     @Override

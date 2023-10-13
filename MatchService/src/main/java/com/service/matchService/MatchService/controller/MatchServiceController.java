@@ -1,5 +1,6 @@
 package com.service.matchService.MatchService.controller;
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.service.matchService.MatchService.model.Match;
 import com.service.matchService.MatchService.model.Player;
 import com.service.matchService.MatchService.model.ResponseRest;
@@ -17,9 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Api(value = "Swagger2DemoRestController", description = "REST Apis related to Match Service Entity!!!!")
 @RestController
@@ -31,7 +30,7 @@ public class MatchServiceController {
     private static final Map<Integer, Match> matchData = new HashMap<Integer, Match>() {
 
         {
-            put(1,  new Match(1,1,2,"2-0",Arrays.asList(new Player(1,"player 1", new playerTeam(1,"team A")))));
+            put(1,  new Match(1,1,2,"2-0",true,Arrays.asList(new Player(1,"player 1", new playerTeam(1,"team A")))));
 
 
         }
@@ -53,6 +52,9 @@ public class MatchServiceController {
     }
 
 
+
+
+    @HystrixCommand(fallbackMethod = "getPlayerAndMatchByIdFallback2")
     @ApiOperation(value = "Put specific Team in the System ", response = String.class, tags = "putMatch")
     @PutMapping("/{id}")
     public String putMatch(@PathVariable int id, @RequestBody Match match) {
@@ -84,6 +86,7 @@ public class MatchServiceController {
         return  msg;
     }
 
+    @HystrixCommand(fallbackMethod = "getPlayerAndMatchByIdFallback")
     @ApiOperation(value = "Post specific Team in the System ", response = String.class, tags = "postMatch")
     @PostMapping
     public String postMatch(@RequestBody Match match) {
@@ -124,9 +127,22 @@ public class MatchServiceController {
         System.out.println("Getting Match by id " + matchId);
         Match match = matchData.get(matchId);
         if (match == null) {
-            match = new Match(-1,-1,-1,"",Arrays.asList());
+            match = new Match(-1,-1,-1,"",false,Arrays.asList());
         }
         return match;
+    }
+    @ApiOperation(value = "Get specific all Match of a team exist in the System ", response = Match.class, tags = "getAllMatchByTeamId")
+    @GetMapping(value = "/allMatch/{teamId}")
+    public List<Match> getAllMatchByTeamId(@PathVariable int teamId) {
+        List<Match> matchList = new ArrayList<Match>();
+        for (Match match : matchData.values()) {
+            if (match.getTeamAId() == teamId || match.getTeamBId() == teamId){
+                matchList.add(match);
+            }
+        }
+
+        return  matchList;
+
     }
 
 
@@ -136,6 +152,16 @@ public class MatchServiceController {
             @ApiResponse(code = 403, message = "forbidden!!!"),
             @ApiResponse(code = 404, message = "not found!!!")
     })
+
+    public String getPlayerAndMatchByIdFallback(@RequestBody Match match) {
+        System.out.println("Player or Match Service is down!!! fallback route enabled...");
+        return "Player/Match Service is down!!!";
+    }
+
+    public String getPlayerAndMatchByIdFallback2(@PathVariable int id, @RequestBody Match match) {
+        System.out.println("Player or Match Service is down!!! fallback route enabled...");
+        return "Player/Match Service is down!!!";
+    }
 
     @Bean
     @LoadBalanced

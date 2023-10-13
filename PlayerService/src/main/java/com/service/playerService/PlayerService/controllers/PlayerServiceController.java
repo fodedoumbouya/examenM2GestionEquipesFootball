@@ -1,5 +1,6 @@
 package com.service.playerService.PlayerService.controllers;
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.service.playerService.PlayerService.model.Player;
 import com.service.playerService.PlayerService.model.ResponseRest;
 import com.service.playerService.PlayerService.model.Team;
@@ -71,6 +72,7 @@ public class PlayerServiceController {
         }
     }
     @ApiOperation(value = "Post specific Player in the System ", response = String.class, tags = "postPlayer")
+    @HystrixCommand(fallbackMethod = "getTeamByIdUpdateFallback")
     @PostMapping
     public String postPlayer(@RequestBody Player player) {
         System.out.println("Posting player " + player);
@@ -110,7 +112,7 @@ public class PlayerServiceController {
 
     @ApiOperation(value = "Get specific Player in the System ", response = Player.class, tags = "getPlayerById")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Suceess|OK"),
+            @ApiResponse(code = 200, message = "Success|OK"),
             @ApiResponse(code = 401, message = "not authorized!"),
             @ApiResponse(code = 403, message = "forbidden!!!"),
             @ApiResponse(code = 404, message = "not found!!!")
@@ -137,6 +139,11 @@ public class PlayerServiceController {
             }
         }
         return  playerList;
+    }
+
+    public String getTeamByIdUpdateFallback(@RequestBody Player player) {
+        System.out.println("Team Service is down!!! fallback route enabled...");
+        return "Team Service is down!!!";
     }
 
     @Bean

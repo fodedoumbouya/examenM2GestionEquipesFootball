@@ -2,6 +2,7 @@ package com.service.teamService.TeamService.controllers;
 
 import java.util.*;
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.service.teamService.TeamService.model.Player;
 import com.service.teamService.TeamService.model.ResponseRest;
 import com.service.teamService.TeamService.model.playerTeam;
@@ -10,6 +11,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.ParameterizedTypeReference;
@@ -18,10 +20,10 @@ import org.springframework.web.bind.annotation.*;
 
 import com.service.teamService.TeamService.model.Team;
 import org.springframework.web.client.RestTemplate;
-import springfox.documentation.spring.web.json.Json;
 
 @Api(value = "Swagger2DemoRestController", description = "REST Apis related to Team Service Entity!!!!")
 @RestController
+@EnableCircuitBreaker
 @RequestMapping(value = "/teams")
 public class TeamServiceController {
 
@@ -57,7 +59,9 @@ public class TeamServiceController {
 
 
 
+
     @ApiOperation(value = "Put specific Team in the System ", response = String.class, tags = "updateTeam")
+    @HystrixCommand(fallbackMethod = "getPlayerByIdUpdateTeamFallback")
     @PutMapping("/{id}")
     public String updateTeam(@PathVariable int id, @RequestBody Map<String, Object> updateTeam) {
                 System.out.println("Updating by id " + updateTeam);
@@ -66,11 +70,12 @@ public class TeamServiceController {
 
             Team team = teamData.get(id);
         if(updateTeam.get("id") == null || updateTeam.get("name") == null ){
-            return  "Fail\nYour body should be like\n{id = 1, name = name, players:[]}";
+            msg=  "Fail\nYour body should be like\n{id = 1, name = name, players:[]}";
         }else if (team == null) {
                 msg = "The ID does not exist";
-                return msg;
-            }else{
+        } else if (id != Integer.parseInt(updateTeam.get("id").toString())){
+            msg = "The url ID doesn't match with the body ID";
+        } else{
                 teamData.remove(id);
                 List<Player> playerList = new ArrayList<Player>();
             for (Player player : team.getPlayers()) {
@@ -81,20 +86,18 @@ public class TeamServiceController {
                 HttpEntity<Player> requestEntity = new HttpEntity<>(player, headers);
 
                 // Make the POST request
-                String url = "http://playerService/players/" + player.getId(); // Replace with the correct URL
-//                System.out.println("Url info " + url);
-//                System.out.println("requestEntity info " + requestEntity);
+                String url = "http://playerService/players/" + player.getId();
                 ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.PUT, requestEntity, String.class);
 
             }
-
             teamData.put(id, new Team(id, updateTeam.get("name").toString(), Arrays.asList()));
-            return msg;
             }
+        return msg;
     }
 
 
     @ApiOperation(value = "Post specific Team in the System ", response = String.class, tags = "postTeam")
+    @HystrixCommand(fallbackMethod = "getPlayerByIdPostTeamFallback")
     @PostMapping
     public String postTeam(@RequestBody Team team) {
         System.out.println("Posting Team " + team);
@@ -170,6 +173,7 @@ public class TeamServiceController {
 
 
     @ApiOperation(value = "Get specific Team in the System ", response = Team.class, tags = "getStudent")
+    @HystrixCommand(fallbackMethod = "getPlayerByIdGetTeamFallback")
     @GetMapping(value = "/{teamId}")
     public Team getTeamById(@PathVariable int teamId) {
         System.out.println("Getting Team by id " + teamId);
@@ -209,6 +213,19 @@ public class TeamServiceController {
             @ApiResponse(code = 403, message = "forbidden!!!"),
             @ApiResponse(code = 404, message = "not found!!!")
     })
+
+    public String getPlayerByIdUpdateTeamFallback(int id, @RequestBody Map<String, Object> updateTeam) {
+        System.out.println("Player or Match Service is down!!! fallback route enabled...");
+        return "Player Service is down!!!";
+    }
+    public String getPlayerByIdPostTeamFallback(@RequestBody Team team) {
+        System.out.println("Player or Match Service is down!!! fallback route enabled...");
+        return "Player Service is down!!!";
+    }
+    public Team getPlayerByIdGetTeamFallback(int teamId){
+        System.out.println("Player or Match Service is down!!! fallback route enabled...");
+        return new Team(-1,"Player Service is down!!!", new ArrayList<>());
+    }
     @Bean
     @LoadBalanced
     public RestTemplate restTemplate() {
