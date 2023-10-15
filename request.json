@@ -1,0 +1,200 @@
+{
+	"info": {
+		"_postman_id": "a9973c33-8a2f-470c-a470-aa5c192aa8b0",
+		"name": "class",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "16029042"
+	},
+	"item": [
+		{
+			"name": "players",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "players",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "teams",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "match",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "allMatch",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "StatsTeam",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "player-stats",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "teams",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": 7,\n    \"name\": \"Team 1\",\n    \"players\":[\n        {\n    \"id\": 1,\n    \"name\": \"player A\",\n    \"playerTeam\": {\n        \"id\": 1,\n        \"teamName\": \"Team A\"\n    }\n}\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8011/teams"
+			},
+			"response": []
+		},
+		{
+			"name": "players",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": 7,\n    \"name\": \"Team 1\",\n    \"players\":[\n        {\n    \"id\": 1,\n    \"name\": \"player A\",\n    \"playerTeam\": {\n        \"id\": 1,\n        \"teamName\": \"Team A\"\n    }\n}\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8011/teams"
+			},
+			"response": []
+		},
+		{
+			"name": "match",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": 7,\n    \"name\": \"Team 1\",\n    \"players\":[\n        {\n    \"id\": 1,\n    \"name\": \"player A\",\n    \"playerTeam\": {\n        \"id\": 1,\n        \"teamName\": \"Team A\"\n    }\n}\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8011/teams"
+			},
+			"response": []
+		},
+		{
+			"name": "players update",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": 1,\n    \"name\": \"player A\",\n    \"playerTeam\": {\n      \"id\": 1,\n      \"teamName\": \"Team A\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8012/players/1"
+			},
+			"response": []
+		},
+		{
+			"name": "teams update",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": 1,\n    \"name\": \"Team 10\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8011/teams/1"
+			},
+			"response": []
+		},
+		{
+			"name": "match update",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"url": "http://localhost:8013/match/1"
+			},
+			"response": []
+		},
+		{
+			"name": "players delete",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": "http://localhost:8012/players/1"
+			},
+			"response": []
+		},
+		{
+			"name": "teams delete",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": "http://localhost:8011/teams/7"
+			},
+			"response": []
+		},
+		{
+			"name": "match delete",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": "http://localhost:8013/match/1"
+			},
+			"response": []
+		},
+		{
+			"name": "New Request",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		}
+	]
+}

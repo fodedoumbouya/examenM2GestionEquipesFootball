@@ -6,6 +6,7 @@ import com.service.matchService.MatchService.model.Player;
 import com.service.matchService.MatchService.model.ResponseRest;
 import com.service.matchService.MatchService.model.playerTeam;
 import com.service.matchService.MatchService.utils.utils;
+import io.micrometer.core.annotation.Timed;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -37,8 +38,20 @@ public class MatchServiceController {
 
     };
 
+    @Timed(
+            value = "MatchService.deleteMatch.request",
+            histogram = true,
+            percentiles = {0.95, 0.99},
+            extraTags = {"version", "1.0"}
+    )
     @ApiOperation(value = "delete specific Match in the System ", response = String.class, tags = "deleteMatch")
     @DeleteMapping("/{id}")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Success|OK"),
+            @ApiResponse(code = 401, message = "not authorized!"),
+            @ApiResponse(code = 403, message = "forbidden!!!"),
+            @ApiResponse(code = 404, message = "not found!!!")
+    })
     public String deleteMatch(@PathVariable int id){
         System.out.println("Updating by id " + id);
         String msg = "Success";
@@ -54,9 +67,21 @@ public class MatchServiceController {
 
 
 
+    @Timed(
+            value = "MatchService.putMatch.request",
+            histogram = true,
+            percentiles = {0.95, 0.99},
+            extraTags = {"version", "1.0"}
+    )
     @HystrixCommand(fallbackMethod = "getPlayerAndMatchByIdFallback2")
     @ApiOperation(value = "Put specific Team in the System ", response = String.class, tags = "putMatch")
     @PutMapping("/{id}")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Success|OK"),
+            @ApiResponse(code = 401, message = "not authorized!"),
+            @ApiResponse(code = 403, message = "forbidden!!!"),
+            @ApiResponse(code = 404, message = "not found!!!")
+    })
     public String putMatch(@PathVariable int id, @RequestBody Match match) {
         System.out.println("Posting match " + match);
         String msg = "Success";
@@ -86,9 +111,22 @@ public class MatchServiceController {
         return  msg;
     }
 
+    @Timed(
+            value = "MatchService.postMatch.request",
+            histogram = true,
+            percentiles = {0.95, 0.99},
+            extraTags = {"version", "1.0"}
+    )
+
     @HystrixCommand(fallbackMethod = "getPlayerAndMatchByIdFallback")
     @ApiOperation(value = "Post specific Team in the System ", response = String.class, tags = "postMatch")
     @PostMapping
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Success|OK"),
+            @ApiResponse(code = 401, message = "not authorized!"),
+            @ApiResponse(code = 403, message = "forbidden!!!"),
+            @ApiResponse(code = 404, message = "not found!!!")
+    })
     public String postMatch(@RequestBody Match match) {
         System.out.println("Posting match " + match);
         String msg = "Success";
@@ -121,8 +159,20 @@ public class MatchServiceController {
 
     }
 
+    @Timed(
+            value = "MatchService.getMatchById.request",
+            histogram = true,
+            percentiles = {0.95, 0.99},
+            extraTags = {"version", "1.0"}
+    )
     @ApiOperation(value = "Get specific Match exist in the System ", response = Match.class, tags = "getMatchById")
     @GetMapping(value = "/{matchId}")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Success|OK"),
+            @ApiResponse(code = 401, message = "not authorized!"),
+            @ApiResponse(code = 403, message = "forbidden!!!"),
+            @ApiResponse(code = 404, message = "not found!!!")
+    })
     public Match getMatchById(@PathVariable int matchId) {
         System.out.println("Getting Match by id " + matchId);
         Match match = matchData.get(matchId);
@@ -131,8 +181,21 @@ public class MatchServiceController {
         }
         return match;
     }
+
+    @Timed(
+            value = "MatchService.getAllMatchByTeamId.request",
+            histogram = true,
+            percentiles = {0.95, 0.99},
+            extraTags = {"version", "1.0"}
+    )
     @ApiOperation(value = "Get specific all Match of a team exist in the System ", response = Match.class, tags = "getAllMatchByTeamId")
     @GetMapping(value = "/allMatch/{teamId}")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Success|OK"),
+            @ApiResponse(code = 401, message = "not authorized!"),
+            @ApiResponse(code = 403, message = "forbidden!!!"),
+            @ApiResponse(code = 404, message = "not found!!!")
+    })
     public List<Match> getAllMatchByTeamId(@PathVariable int teamId) {
         List<Match> matchList = new ArrayList<Match>();
         for (Match match : matchData.values()) {
@@ -146,12 +209,7 @@ public class MatchServiceController {
     }
 
 
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Success|OK"),
-            @ApiResponse(code = 401, message = "not authorized!"),
-            @ApiResponse(code = 403, message = "forbidden!!!"),
-            @ApiResponse(code = 404, message = "not found!!!")
-    })
+
 
     public String getPlayerAndMatchByIdFallback(@RequestBody Match match) {
         System.out.println("Player or Match Service is down!!! fallback route enabled...");

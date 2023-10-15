@@ -6,6 +6,7 @@ import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.service.teamService.TeamService.model.Player;
 import com.service.teamService.TeamService.model.ResponseRest;
 import com.service.teamService.TeamService.model.playerTeam;
+import io.micrometer.core.annotation.Timed;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -42,8 +43,20 @@ public class TeamServiceController {
 
 
 
+    @Timed(
+            value = "teamService.deleteTeam.request",
+            histogram = true,
+            percentiles = {0.95, 0.99},
+            extraTags = {"version", "1.0"}
+    )
     @ApiOperation(value = "delete specific Team in the System ", response = String.class, tags = "deleteTeam")
     @DeleteMapping("/{id}")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Success|OK"),
+            @ApiResponse(code = 401, message = "not authorized!"),
+            @ApiResponse(code = 403, message = "forbidden!!!"),
+            @ApiResponse(code = 404, message = "not found!!!")
+    })
     public String deleteTeam(@PathVariable int id){
         System.out.println("Updating by id " + id);
         String msg = "Success";
@@ -60,9 +73,21 @@ public class TeamServiceController {
 
 
 
+    @Timed(
+            value = "teamService.updateTeam.request",
+            histogram = true,
+            percentiles = {0.95, 0.99},
+            extraTags = {"version", "1.0"}
+    )
     @ApiOperation(value = "Put specific Team in the System ", response = String.class, tags = "updateTeam")
     @HystrixCommand(fallbackMethod = "getPlayerByIdUpdateTeamFallback")
     @PutMapping("/{id}")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Success|OK"),
+            @ApiResponse(code = 401, message = "not authorized!"),
+            @ApiResponse(code = 403, message = "forbidden!!!"),
+            @ApiResponse(code = 404, message = "not found!!!")
+    })
     public String updateTeam(@PathVariable int id, @RequestBody Map<String, Object> updateTeam) {
                 System.out.println("Updating by id " + updateTeam);
 
@@ -96,9 +121,21 @@ public class TeamServiceController {
     }
 
 
+    @Timed(
+            value = "teamService.postTeam.request",
+            histogram = true,
+            percentiles = {0.95, 0.99},
+            extraTags = {"version", "1.0"}
+    )
     @ApiOperation(value = "Post specific Team in the System ", response = String.class, tags = "postTeam")
     @HystrixCommand(fallbackMethod = "getPlayerByIdPostTeamFallback")
     @PostMapping
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Success|OK"),
+            @ApiResponse(code = 401, message = "not authorized!"),
+            @ApiResponse(code = 403, message = "forbidden!!!"),
+            @ApiResponse(code = 404, message = "not found!!!")
+    })
     public String postTeam(@RequestBody Team team) {
         System.out.println("Posting Team " + team);
         if(!team.areAllFieldsNotEmpty()){
@@ -172,9 +209,21 @@ public class TeamServiceController {
     }
 
 
+    @Timed(
+            value = "teamService.getTeamById.request",
+            histogram = true,
+            percentiles = {0.95, 0.99},
+            extraTags = {"version", "1.0"}
+    )
     @ApiOperation(value = "Get specific Team in the System ", response = Team.class, tags = "getStudent")
     @HystrixCommand(fallbackMethod = "getPlayerByIdGetTeamFallback")
     @GetMapping(value = "/{teamId}")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Success|OK"),
+            @ApiResponse(code = 401, message = "not authorized!"),
+            @ApiResponse(code = 403, message = "forbidden!!!"),
+            @ApiResponse(code = 404, message = "not found!!!")
+    })
     public Team getTeamById(@PathVariable int teamId) {
         System.out.println("Getting Team by id " + teamId);
         Team team = teamData.get(teamId);
@@ -195,8 +244,20 @@ public class TeamServiceController {
         return team;
     }
 
+    @Timed(
+            value = "teamService.getTeamExistById.request",
+            histogram = true,
+            percentiles = {0.95, 0.99},
+            extraTags = {"version", "1.0"}
+    )
     @ApiOperation(value = "Get if Team exist in the System ", response = Team.class, tags = "getTeamExistById")
     @GetMapping(value = "/teamsExist/{teamId}")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Success|OK"),
+            @ApiResponse(code = 401, message = "not authorized!"),
+            @ApiResponse(code = 403, message = "forbidden!!!"),
+            @ApiResponse(code = 404, message = "not found!!!")
+    })
     public ResponseRest getTeamExistById(@PathVariable int teamId) {
         System.out.println("Getting Team by id " + teamId);
         Team team = teamData.get(teamId);
@@ -207,12 +268,7 @@ public class TeamServiceController {
         }
     }
 
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Success|OK"),
-            @ApiResponse(code = 401, message = "not authorized!"),
-            @ApiResponse(code = 403, message = "forbidden!!!"),
-            @ApiResponse(code = 404, message = "not found!!!")
-    })
+
 
     public String getPlayerByIdUpdateTeamFallback(int id, @RequestBody Map<String, Object> updateTeam) {
         System.out.println("Player or Match Service is down!!! fallback route enabled...");

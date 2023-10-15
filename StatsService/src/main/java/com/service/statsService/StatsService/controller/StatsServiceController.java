@@ -2,9 +2,9 @@ package com.service.statsService.StatsService.controller;
 
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
 import com.service.statsService.StatsService.model.*;
 import com.service.statsService.StatsService.utils.utils;
+import io.micrometer.core.annotation.Timed;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -13,9 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,9 +29,22 @@ public class StatsServiceController {
     @Autowired
     RestTemplate restTemplate;
 
+
+    @Timed(
+            value = "StatsService.getStatsPlayerById.request",
+            histogram = true,
+            percentiles = {0.95, 0.99},
+            extraTags = {"version", "1.0"}
+    )
     @HystrixCommand(fallbackMethod = "getPlayerByIdFallback")
     @ApiOperation(value = "Get player stats from playerId ", response = StatsTeam.class, tags = "getTeamExistById")
     @GetMapping(value = "/player-stats/{playerId}")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Success|OK"),
+            @ApiResponse(code = 401, message = "not authorized!"),
+            @ApiResponse(code = 403, message = "forbidden!!!"),
+            @ApiResponse(code = 404, message = "not found!!!")
+    })
     public StatsPlayer getStatsPlayerById(@PathVariable int playerId) {
         Player player = utils.getPlayerById(playerId,restTemplate);
         List<Match> listMatch = utils.getAllMatchByTeamId(player.getPlayerTeam().getId(),restTemplate);
@@ -53,9 +63,21 @@ public class StatsServiceController {
 
     }
 
+    @Timed(
+            value = "StatsService.getStatsTeamById.request",
+            histogram = true,
+            percentiles = {0.95, 0.99},
+            extraTags = {"version", "1.0"}
+    )
     @HystrixCommand(fallbackMethod = "getStatsTeamByIdFallback")
     @ApiOperation(value = "Get team stats from teamId ", response = StatsTeam.class, tags = "getTeamExistById")
     @GetMapping(value = "/team-stats/{teamId}")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Success|OK"),
+            @ApiResponse(code = 401, message = "not authorized!"),
+            @ApiResponse(code = 403, message = "forbidden!!!"),
+            @ApiResponse(code = 404, message = "not found!!!")
+    })
     public StatsTeam getStatsTeamById(@PathVariable int teamId) {
 
         List<Match> listMatch = utils.getAllMatchByTeamId(teamId,restTemplate);
@@ -75,13 +97,6 @@ public class StatsServiceController {
         StatsTeam statsTeam = new StatsTeam(nbrMatch,nbrWins,nbrLoses,teamName);
         return  statsTeam;
     }
-
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Success|OK"),
-            @ApiResponse(code = 401, message = "not authorized!"),
-            @ApiResponse(code = 403, message = "forbidden!!!"),
-            @ApiResponse(code = 404, message = "not found!!!")
-    })
 
     public StatsPlayer getPlayerByIdFallback(int playerId) {
         System.out.println("Player or Match Service is down!!! fallback route enabled...");

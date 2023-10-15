@@ -5,6 +5,7 @@ import com.service.playerService.PlayerService.model.Player;
 import com.service.playerService.PlayerService.model.ResponseRest;
 import com.service.playerService.PlayerService.model.Team;
 import com.service.playerService.PlayerService.model.playerTeam;
+import io.micrometer.core.annotation.Timed;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -37,8 +38,20 @@ public class PlayerServiceController {
 
     };
 
+    @Timed(
+            value = "PlayerService.deletePlayer.request",
+            histogram = true,
+            percentiles = {0.95, 0.99},
+            extraTags = {"version", "1.0"}
+    )
     @ApiOperation(value = "delete specific Player in the System ", response = String.class, tags = "deletePlayer")
     @DeleteMapping("/{id}")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Success|OK"),
+            @ApiResponse(code = 401, message = "not authorized!"),
+            @ApiResponse(code = 403, message = "forbidden!!!"),
+            @ApiResponse(code = 404, message = "not found!!!")
+    })
     public String deletePlayer(@PathVariable int id){
         System.out.println("Updating by id " + id);
         String msg = "Success";
@@ -52,8 +65,20 @@ public class PlayerServiceController {
         }
     }
 
+    @Timed(
+            value = "PlayerService.updatePlayer.request",
+            histogram = true,
+            percentiles = {0.95, 0.99},
+            extraTags = {"version", "1.0"}
+    )
     @ApiOperation(value = "Put specific Player in the System ", response = String.class, tags = "updatePlayer")
     @PutMapping("/{id}")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Success|OK"),
+            @ApiResponse(code = 401, message = "not authorized!"),
+            @ApiResponse(code = 403, message = "forbidden!!!"),
+            @ApiResponse(code = 404, message = "not found!!!")
+    })
     public String updatePlayer(@PathVariable int id, @RequestBody Player updatePlayer) {
         System.out.println("Updating by id " + updatePlayer.toString());
         String msg = "Success";
@@ -71,9 +96,22 @@ public class PlayerServiceController {
             return msg;
         }
     }
+
+    @Timed(
+            value = "PlayerService.postPlayer.request",
+            histogram = true,
+            percentiles = {0.95, 0.99},
+            extraTags = {"version", "1.0"}
+    )
     @ApiOperation(value = "Post specific Player in the System ", response = String.class, tags = "postPlayer")
     @HystrixCommand(fallbackMethod = "getTeamByIdUpdateFallback")
     @PostMapping
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Success|OK"),
+            @ApiResponse(code = 401, message = "not authorized!"),
+            @ApiResponse(code = 403, message = "forbidden!!!"),
+            @ApiResponse(code = 404, message = "not found!!!")
+    })
     public String postPlayer(@RequestBody Player player) {
         System.out.println("Posting player " + player);
 
@@ -110,14 +148,21 @@ public class PlayerServiceController {
 
     }
 
+
+    @Timed(
+            value = "PlayerService.getPlayerById.request",
+            histogram = true,
+            percentiles = {0.95, 0.99},
+            extraTags = {"version", "1.0"}
+    )
     @ApiOperation(value = "Get specific Player in the System ", response = Player.class, tags = "getPlayerById")
+    @GetMapping(value = "/{playerId}")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Success|OK"),
             @ApiResponse(code = 401, message = "not authorized!"),
             @ApiResponse(code = 403, message = "forbidden!!!"),
             @ApiResponse(code = 404, message = "not found!!!")
     })
-    @GetMapping(value = "/{playerId}")
     public Player getPlayerById(@PathVariable int playerId) {
         System.out.println("Getting Player by id " + playerId);
         Player player = playerData.get(playerId);
@@ -128,8 +173,21 @@ public class PlayerServiceController {
         return player;
     }
 
+
+    @Timed(
+            value = "PlayerService.getPlayerByTeamId.request",
+            histogram = true,
+            percentiles = {0.95, 0.99},
+            extraTags = {"version", "1.0"}
+    )
     @ApiOperation(value = "Get specific Player in the System ", response = Player.class, tags = "getPlayerByTeamId")
     @GetMapping(value = "/getPlayerByTeamId/{teamId}")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Success|OK"),
+            @ApiResponse(code = 401, message = "not authorized!"),
+            @ApiResponse(code = 403, message = "forbidden!!!"),
+            @ApiResponse(code = 404, message = "not found!!!")
+    })
     public List<Player> getPlayerByTeamId(@PathVariable int teamId) {
         System.out.println("Getting Player by teamId " + teamId);
         List<Player> playerList = new ArrayList<Player>();
